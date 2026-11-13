@@ -1,0 +1,17 @@
+PocketBooks is the player for a self-hosted audiobook server that users run on their own Mac. There is no hosted service and no account, so no login is needed.
+
+HOW TO REVIEW WITHOUT A SERVER
+1. Launch the app. The first screen is Settings.
+2. Tap "Try the demo library" (section "No server yet?").
+3. Five public-domain audiobooks appear. Open any book: playback starts, the chapter list and the synchronised transcript ("Text" tab) are available.
+
+The demo library is a set of pre-generated static files hosted at https://www.mauli.app/pocketbooks/catalogue/ . It contains only works that are in the public domain in the United States and the European Union; the provenance of each title is documented at https://github.com/outspokenhardcore/pocketbooks/blob/main/samples/README.md
+
+WHY App Transport Security ALLOWS ARBITRARY LOADS
+Users connect to a server on their own home network or Tailscale network, usually by IP address over plain HTTP, where no publicly trusted TLS certificate can exist. The app only contacts the address the user types in, or the HTTPS demo library. No other host is contacted.
+
+OTHER NOTES
+- Background audio is used for audiobook playback with the screen locked.
+- The local network permission is used only to reach the user's own server.
+- The app has no in-app purchases, no ads, no analytics and no third-party SDKs.
+- Source code (AGPL-3.0): https://github.com/outspokenhardcore/pocketbooks

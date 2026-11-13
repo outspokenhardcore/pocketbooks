@@ -1,0 +1,127 @@
+# Store release lanes for PocketBooks.
+#
+#   source ~/.config/pocketbooks/ios.env       # bundle id, team, review contact
+#   source ~/.config/pocketbooks/asc.env       # App Store Connect API key
+#   fastlane ios metadata                      # listing text + screenshots
+#   fastlane ios testflight                    # upload the exported build
+#   fastlane ios submit                        # send the build to App Review
+#   fastlane ios check                         # read-only: is the key valid, does the app exist?
+#
+# CI runs the same lanes: .github/workflows/store-listing.yml.
+#
+# Nothing personal lives in this repository: the bundle id, team, review
+# contact and API key all come from the environment.
+default_platform(:ios)
+
+SCREENSHOT_SOURCES = {
+  "iphone-16-pro-max" => "iPhone",
+  "ipad-pro-13-inch-m4" => "iPad",
+}.freeze
+
+def api_key
+  content = ENV["APP_STORE_CONNECT_KEY_P8"]
+  # A secret store may hold the PEM with literal "\n" sequences or base64-encoded.
+  content = content.gsub("\\n", "\n") if content&.include?("\\n")
+  base64 = !content.nil? && !content.include?("BEGIN")
+
+  app_store_connect_api_key(
+    key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+    issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+    key_filepath: ENV["APP_STORE_CONNECT_KEY_PATH"],
+    key_content: content,
+    is_key_content_base64: base64,
+    in_house: false
+  )
+end
+
+# Copies the committed listing and adds what must stay out of a public repo
+# (review contact, copyright holder) from the environment. Returns the folder.
+def assemble_metadata
+  root = File.expand_path("../build/store", __dir__)
+  FileUtils.rm_rf(root)
+  FileUtils.mkdir_p(root)
+  FileUtils.cp_r(File.expand_path("metadata/.", __dir__), File.join(root, "metadata"))
+
+  review = File.join(root, "metadata", "review_information")
+  FileUtils.mkdir_p(review)
+  {
+    "first_name" => "KB_REVIEW_FIRST_NAME",
+    "last_name" => "KB_REVIEW_LAST_NAME",
+    "email_address" => "KB_REVIEW_EMAIL",
+    "phone_number" => "KB_REVIEW_PHONE",
+  }.each do |file, variable|
+    File.write(File.join(review, "#{file}.txt"), ENV.fetch(variable))
+  end
+  File.write(File.join(root, "metadata", "copyright.txt"), ENV.fetch("KB_COPYRIGHT"))
+
+  # deliver files screenshots by pixel size, so both device sets share a folder.
+  shots = File.join(root, "screenshots", "en-US")
+  FileUtils.mkdir_p(shots)
+  SCREENSHOT_SOURCES.each do |dir, label|
+    Dir[File.expand_path("../screenshots/#{dir}/*.png", __dir__)].sort.each do |png|
+      FileUtils.cp(png, File.join(shots, "#{label}-#{File.basename(png)}"))
+    end
+  end
+  root
+end
+
+platform :ios do
+  desc "Read-only: prove the API key works and show the app and its latest builds"
+  lane :check do
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from(hash: api_key)
+    bundle_id = ENV.fetch("KB_IOS_BUNDLE_ID")
+    app = Spaceship::ConnectAPI::App.find(bundle_id)
+    UI.user_error!("No App Store Connect record for #{bundle_id}") unless app
+
+    UI.success("App: #{app.name} (#{bundle_id})")
+    builds = Spaceship::ConnectAPI::Build.all(app_id: app.id, sort: "-uploadedDate", limit: 5)
+    UI.user_error!("The app exists but has no builds yet") if builds.empty?
+    builds.each do |b|
+      UI.message("  build #{b.version}  #{b.processing_state}  uploaded #{b.uploaded_date}")
+    end
+  end
+
+  desc "Upload listing text and screenshots without touching the binary"
+  lane :metadata do
+    root = assemble_metadata
+    deliver(
+      api_key: api_key,
+      metadata_path: File.join(root, "metadata"),
+      screenshots_path: File.join(root, "screenshots"),
+      skip_binary_upload: true,
+      overwrite_screenshots: true,
+      force: true,
+      submit_for_review: false,
+      run_precheck_before_submit: false
+    )
+  end
+
+  desc "Upload the exported IPA to TestFlight (run ios/release.sh first)"
+  lane :testflight do
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: File.expand_path("../build/release/export/PocketBooks.ipa", __dir__),
+      skip_waiting_for_build_processing: false
+    )
+  end
+
+  desc "Submit the processed build to App Review"
+  lane :submit do
+    deliver(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      build_number: "latest",
+      submit_for_review: true,
+      automatic_release: false,
+      force: true,
+      submission_information: {
+        export_compliance_uses_encryption: false,
+        content_rights_contains_third_party_content: true,
+        content_rights_has_rights: true,
+        add_id_info_uses_idfa: false,
+      }
+    )
+  end
+end

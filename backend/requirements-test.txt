@@ -1,0 +1,13 @@
+# Lightweight dependencies required to run the backend test suite.
+# The real Pocket TTS engine and its large model are intentionally not needed here;
+# engine behavior is mocked in unit tests and ffmpeg is installed separately.
+pytest>=8,<10
+numpy>=1.24,<3
+pymupdf>=1.24
+mutagen>=1.47
+soundfile>=0.12
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2
+scipy>=1.12
+httpx2>=2

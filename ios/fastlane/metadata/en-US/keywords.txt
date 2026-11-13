@@ -1,0 +1,1 @@
+audiobook,tts,pdf,player,self-hosted,offline,chapters,transcript,pocket tts,public domain,reader

@@ -1,0 +1,32 @@
+name: OIDC claims (debug)
+
+# Prints the claims GitHub puts into this repository's OIDC token, never the token
+# itself. Use it when Tailscale or Infisical answer 403: the trust rule has to match
+# the `sub` printed here character for character (or by glob).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  claims:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Print the claims
+        env:
+          AUDIENCE: ${{ vars.TS_OIDC_AUDIENCE }}
+        run: |
+          raw=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${AUDIENCE:-sts.example}")
+          token=$(printf '%s' "$raw" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')
+          echo "::add-mask::$token"
+          printf '%s' "$token" | python3 -c '
+          import base64, json, sys
+          payload = sys.stdin.read().split(".")[1]
+          claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+          keep = ["sub", "aud", "iss", "repository", "repository_owner", "repository_owner_id",
+                  "repository_id", "environment", "ref", "job_workflow_ref", "runner_environment"]
+          print(json.dumps({k: claims.get(k) for k in keep}, indent=2))'

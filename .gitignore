@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+backend/.venv/
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Xcode / iOS
+ios/build/
+ios/DerivedData/
+# Generated from ios/project.yml via `xcodegen generate`.
+ios/PocketBooks.xcodeproj/
+*.xcuserstate
+xcuserdata/
+
+# Local data / secrets (server state lives in ~/Library/Application Support)
+api_token.txt
+*.sqlite3
+
+# Personal book libraries and conversion output must never be committed.
+# PocketBooks ships no books; the sample PDFs are generated into the library
+# folder by `python -m app.samples`.
+booksIN/
+booksOUT/
+audiobooksTXT/
+txt_backup/
+samples/*.pdf
+*.m4b
+*.mp3
+*.wav
+
+# Tooling caches
+.hermes/
+
+# API keys (never commit)
+*_key.txt
+minimax_key.txt
+
+# fastlane scratch output (assembled listing, reports)
+ios/fastlane/build/
+ios/fastlane/report.xml

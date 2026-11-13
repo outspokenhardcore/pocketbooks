@@ -1,0 +1,36 @@
+name: Backend tests
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "backend/**"
+      - "samples/**"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "samples/**"
+      - ".github/workflows/backend-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-test.txt
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg
+      - name: Install test dependencies
+        run: python -m pip install -r backend/requirements-test.txt
+      - name: Run backend tests
+        working-directory: backend
+        run: python -m pytest -q

@@ -1,0 +1,1 @@
+First public release. Includes a demo library with five public-domain books that plays without any setup.

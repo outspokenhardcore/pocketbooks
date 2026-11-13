@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PocketBooks — self-hosted audiobooks that play while they generate</title>
+<meta name="description" content="Turn the PDFs on your own Mac into audiobooks with Pocket TTS and start listening on your iPhone before generation finishes. Open source, no cloud, no account.">
+<link rel="canonical" href="https://www.mauli.app/pocketbooks/">
+<link rel="icon" href="assets/icon-180.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.mauli.app/pocketbooks/">
+<meta property="og:title" content="PocketBooks — audiobooks that play while they generate">
+<meta property="og:description" content="Your PDFs become spoken audiobooks on your own Mac. Start listening in under a minute instead of waiting six hours.">
+<meta property="og:image" content="https://www.mauli.app/pocketbooks/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"PocketBooks",
+"applicationCategory":"BookApplication","operatingSystem":"iOS, macOS",
+"license":"https://www.gnu.org/licenses/agpl-3.0.html",
+"url":"https://github.com/outspokenhardcore/pocketbooks",
+"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}
+</script>
+<style>
+  :root{
+    --bg:#0B0B0C; --surface:#141417; --border:#24242A;
+    --text:#E8E6E1; --muted:#9A958C;
+    --accent:#0A84FF; --teal:#5EEAD4; --amber:#E8B059;
+    --sf-bg:#0E1A2F; --spy-bg:#241610;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --wrap:1100px; --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--wrap); margin:0 auto; padding:0 24px}
+  section{padding:88px 0; border-top:1px solid var(--border)}
+  section:first-of-type{border-top:0}
+  h1,h2,h3{line-height:1.2; margin:0 0 .5em}
+  h1{font-family:var(--serif); font-size:clamp(2rem,5vw,3.3rem); font-weight:600; letter-spacing:-.01em}
+  h2{font-size:clamp(1.4rem,3vw,2rem); font-weight:650; letter-spacing:-.01em}
+  h3{font-size:1.05rem; font-weight:650}
+  p{margin:0 0 1em}
+  a{color:var(--accent)}
+  .muted{color:var(--muted)}
+  .lead{font-size:clamp(1.05rem,2vw,1.25rem); color:var(--muted); max-width:46ch}
+  .eyebrow{font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:0 0 1em}
+  :focus-visible{outline:3px solid var(--accent); outline-offset:3px; border-radius:6px}
+
+  /* header */
+  header{position:sticky; top:0; z-index:20; background:rgba(11,11,12,.86);
+    backdrop-filter:saturate(140%) blur(10px); border-bottom:1px solid var(--border)}
+  .bar{display:flex; align-items:center; gap:14px; padding:12px 0}
+  .bar img{width:34px; height:34px; border-radius:9px; display:block}
+  .bar strong{font-size:1rem; letter-spacing:-.01em}
+  .bar nav{margin-left:auto; display:flex; gap:8px; align-items:center}
+  .lang{display:flex; border:1px solid var(--border); border-radius:999px; overflow:hidden}
+  .lang button{
+    background:none; border:0; color:var(--muted); font:inherit; font-size:.82rem;
+    padding:5px 12px; cursor:pointer}
+  .lang button[aria-pressed="true"]{background:var(--surface); color:var(--text)}
+
+  /* buttons */
+  .btn{display:inline-block; padding:13px 22px; border-radius:12px; font-weight:600;
+    text-decoration:none; font-size:.97rem; border:1px solid transparent}
+  .btn-primary{background:var(--accent); color:#fff}
+  .btn-ghost{border-color:var(--border); color:var(--text)}
+  .btn:hover{filter:brightness(1.12)}
+  .actions{display:flex; gap:12px; flex-wrap:wrap; margin:28px 0 14px}
+
+  /* hero */
+  .hero{display:grid; grid-template-columns:1.15fr .85fr; gap:56px; align-items:center}
+  .phone{width:100%; max-width:290px; height:auto; border-radius:30px;
+    border:1px solid var(--border); display:block; margin:0 auto}
+
+  /* wait band */
+  .band{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:30px}
+  .track{height:16px; border-radius:999px; background:#22222A; overflow:hidden; display:flex}
+  .track i{display:block; height:100%; background:var(--accent); width:2%}
+  .ticks{display:flex; justify-content:space-between; margin-top:12px;
+    font-size:.84rem; color:var(--muted); gap:16px}
+  .ticks b{color:var(--text); font-weight:600}
+
+  /* grids */
+  .grid{display:grid; gap:18px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:22px}
+  .card p{margin:0; color:var(--muted); font-size:.95rem}
+  .card h3{margin-bottom:.4em}
+
+  /* gallery */
+  .shots{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(230px,1fr);
+    gap:20px; overflow-x:auto; padding-bottom:14px; scroll-snap-type:x mandatory}
+  .shot{scroll-snap-align:start}
+  .shot img{width:100%; height:auto; border-radius:20px;
+    border:1px solid var(--border); display:block}
+  .shot figcaption{margin-top:12px; font-size:.88rem; color:var(--muted)}
+
+  /* steps */
+  .step{counter-increment:step}
+  .step .num{width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff;
+    display:grid; place-items:center; font-size:.9rem; font-weight:700; margin-bottom:14px}
+  pre{background:#0E0E11; border:1px solid var(--border); border-radius:10px;
+    padding:13px 15px; overflow-x:auto; margin:14px 0 0}
+  code{font-family:var(--mono); font-size:.84rem; color:#D7D3CB}
+
+  /* books */
+  .books{grid-template-columns:repeat(5,1fr)}
+  .book{border-radius:14px; padding:22px 16px; min-height:188px;
+    display:flex; flex-direction:column; justify-content:flex-end; border:1px solid var(--border)}
+  .book.sf{background:var(--sf-bg)}
+  .book.spy{background:var(--spy-bg)}
+  .book .genre{font-size:.64rem; letter-spacing:.17em; text-transform:uppercase; margin-bottom:auto}
+  .book.sf .genre{color:var(--teal)}
+  .book.spy .genre{color:var(--amber)}
+  .book .title{font-family:var(--serif); font-size:1.1rem; line-height:1.25; margin:0 0 6px}
+  .book .meta{font-size:.8rem; color:var(--muted); margin:0}
+
+  /* faq */
+  details{border-bottom:1px solid var(--border); padding:16px 0}
+  details summary{cursor:pointer; font-weight:600; list-style:none; display:flex;
+    justify-content:space-between; gap:16px; align-items:center}
+  details summary::-webkit-details-marker{display:none}
+  details summary::after{content:"+"; color:var(--muted); font-size:1.3rem; line-height:1}
+  details[open] summary::after{content:"\2212"}
+  details p{margin:12px 0 0; color:var(--muted); max-width:70ch}
+
+  footer{border-top:1px solid var(--border); padding:40px 0 64px; color:var(--muted); font-size:.9rem}
+  footer nav{display:flex; gap:20px; flex-wrap:wrap; margin-bottom:14px}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr; gap:36px}
+    .cols-3,.cols-2{grid-template-columns:1fr}
+    .books{grid-auto-flow:column; grid-auto-columns:minmax(165px,1fr);
+      grid-template-columns:none; overflow-x:auto; padding-bottom:10px}
+    section{padding:64px 0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *{transition:none!important; animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <img src="assets/icon-180.png" alt="">
+    <strong>PocketBooks</strong>
+    <nav>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="de" aria-pressed="false">DE</button>
+      </div>
+      <a class="btn btn-ghost" href="https://github.com/outspokenhardcore/pocketbooks">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <div class="wrap hero">
+    <div>
+      <h1 data-i18n="hero.h1">Your audiobook starts playing while your Mac is still making it.</h1>
+      <p class="lead" data-i18n="hero.lead">PocketBooks turns the PDFs on your own Mac into spoken audiobooks and streams them to your iPhone as they are generated. No cloud. No account. No upload.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://github.com/outspokenhardcore/pocketbooks" data-i18n="hero.cta1">View on GitHub</a>
+        <a class="btn btn-ghost" href="#how" data-i18n="hero.cta2">How it works</a>
+      </div>
+      <p class="muted" style="font-size:.86rem" data-i18n="hero.fine">Requires a Mac. Free and open source, AGPL-3.0.</p>
+    </div>
+    <img class="phone" src="assets/03-player-generating.png"
+         alt="The PocketBooks player: chapter 2 is playing while the server is still generating chunk 94 of 627."
+         data-i18n-alt="hero.shotAlt" width="430" height="932" loading="eager">
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="wait.eyebrow">The difference</p>
+    <h2 data-i18n="wait.h2">Six hours of work. Under a minute of waiting.</h2>
+    <div class="band">
+      <div class="track" role="img"
+           aria-label="Progress bar: listening starts in under a minute, generation continues for about six hours and forty minutes."
+           data-i18n-aria="wait.barAlt"><i></i></div>
+      <div class="ticks">
+        <span><b data-i18n="wait.leftB">You start listening</b><br>
+          <span data-i18n="wait.leftS">in under a minute</span></span>
+        <span style="text-align:right"><b data-i18n="wait.rightB">Generation continues</b><br>
+          <span data-i18n="wait.rightS">another ~6 h 41 min</span></span>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:18px; max-width:62ch" data-i18n="wait.note">Chunked synthesis feeds a growing HLS stream, so playback can begin as soon as the first segments exist. Measured on an M2 Pro: Pocket TTS generates about 3–5× faster than you can listen, on the CPU alone.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="feat.eyebrow">What you get</p>
+    <h2 data-i18n="feat.h2">An audiobook player for your own digital books.</h2>
+    <div class="grid cols-3" style="margin-top:34px">
+      <div class="card"><h3 data-i18n="feat.1t">Your library, not a catalogue</h3>
+        <p data-i18n="feat.1b">Drop PDFs in a folder on your Mac. Each book is identified by its content hash, so renaming or moving it never loses your place.</p></div>
+      <div class="card"><h3 data-i18n="feat.2t">Read along while you listen</h3>
+        <p data-i18n="feat.2b">A synchronised transcript highlights the sentence being spoken. Tap any line to jump straight to it.</p></div>
+      <div class="card"><h3 data-i18n="feat.3t">Real chapters</h3>
+        <p data-i18n="feat.3b">Chapter marks come from the PDF outline. Front matter, dedications and copyright pages are skipped.</p></div>
+      <div class="card"><h3 data-i18n="feat.4t">Six built-in voices</h3>
+        <p data-i18n="feat.4b">No voice cloning needed.</p></div>
+      <div class="card"><h3 data-i18n="feat.5t">Resume anywhere</h3>
+        <p data-i18n="feat.5b">Your position is stored per book on your own server and syncs between your devices.</p></div>
+      <div class="card"><h3 data-i18n="feat.6t">Offline when it's done</h3>
+        <p data-i18n="feat.6b">The finished book is assembled into a tagged M4B with cover art and chapter marks.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="shots.eyebrow">The app</p>
+    <h2 data-i18n="shots.h2">Five screens, no menus to learn.</h2>
+    <div class="shots" style="margin-top:34px">
+      <figure class="shot" style="margin:0">
+        <img src="assets/01-library.png" alt="Library screen listing five public-domain books with covers, authors and runtimes." data-i18n-alt="shots.1a" loading="lazy">
+        <figcaption data-i18n="shots.1c">Your own books, with covers and runtimes.</figcaption></figure>
+      <figure class="shot" style="margin:0">
+        <img src="assets/03-player-generating.png" alt="Player screen: chapter 2 is playing, later chapters show an hourglass because they are not generated yet." data-i18n-alt="shots.2a" loading="lazy">
+        <figcaption data-i18n="shots.2c">Chapter 2 is playing. Chapter 6 does not exist yet.</figcaption></figure>
+      <figure class="shot" style="margin:0">
+        <img src="assets/04-transcript.png" alt="Transcript view with the currently spoken sentence highlighted in bold." data-i18n-alt="shots.3a" loading="lazy">
+        <figcaption data-i18n="shots.3c">The spoken sentence, highlighted as you listen.</figcaption></figure>
+      <figure class="shot" style="margin:0">
+        <img src="assets/02-voices.png" alt="Voice menu showing the six built-in voices." data-i18n-alt="shots.4a" loading="lazy">
+        <figcaption data-i18n="shots.4c">Six built-in voices.</figcaption></figure>
+      <figure class="shot" style="margin:0">
+        <img src="assets/05-library-light.png" alt="The library in the light theme with a Continue row at the top." data-i18n-alt="shots.5a" loading="lazy">
+        <figcaption data-i18n="shots.5c">Light and dark, system-wide.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="how.eyebrow">Setup</p>
+    <h2 data-i18n="how.h2">Three steps, one evening.</h2>
+    <div class="grid cols-3" style="margin-top:34px">
+      <div class="card step"><div class="num" aria-hidden="true">1</div>
+        <h3 data-i18n="how.1t">Install the server</h3>
+        <p data-i18n="how.1b">One clone, one virtualenv, one command on your Mac.</p>
+        <pre><code>pip install -r requirements.txt
+python -m app.serve</code></pre></div>
+      <div class="card step"><div class="num" aria-hidden="true">2</div>
+        <h3 data-i18n="how.2t">Add books</h3>
+        <p data-i18n="how.2b">Drop your own PDFs into ~/Audiobooks/PDFs, or run one command to get five public-domain classics to start with.</p>
+        <pre><code>python -m app.samples</code></pre></div>
+      <div class="card step"><div class="num" aria-hidden="true">3</div>
+        <h3 data-i18n="how.3t">Listen</h3>
+        <p data-i18n="how.3b">Build the iPhone app once, enter your server address and token, pick a book. Playback starts long before generation finishes.</p>
+        <pre><code>xcodegen generate
+open PocketBooks.xcodeproj</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="lib.eyebrow">Included</p>
+    <h2 data-i18n="lib.h2">PocketBooks ships no books. It ships five that nobody owns.</h2>
+    <div class="grid books" style="margin-top:34px">
+      <div class="book sf"><p class="genre">Science fiction</p>
+        <p class="title">The War of the Worlds</p><p class="meta">H. G. Wells · 1898 · 6.7 h</p></div>
+      <div class="book sf"><p class="genre">Science fiction</p>
+        <p class="title">The Time Machine</p><p class="meta">H. G. Wells · 1895 · 3.6 h</p></div>
+      <div class="book sf"><p class="genre">Science fiction</p>
+        <p class="title">A Princess of Mars</p><p class="meta">E. R. Burroughs · 1912 · 7.2 h</p></div>
+      <div class="book spy"><p class="genre">Spy thriller</p>
+        <p class="title">The Thirty-Nine Steps</p><p class="meta">John Buchan · 1915 · 4.2 h</p></div>
+      <div class="book spy"><p class="genre">Spy thriller</p>
+        <p class="title">The Riddle of the Sands</p><p class="meta">Erskine Childers · 1903 · 11.8 h</p></div>
+    </div>
+    <p class="muted" style="margin-top:20px; max-width:62ch" data-i18n="lib.note">Public domain in both the United States and the European Union. The provenance of every title is <a href="https://github.com/outspokenhardcore/pocketbooks/blob/main/samples/README.md">documented in the repository</a>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap" style="max-width:720px; margin:0 auto">
+    <p class="eyebrow" data-i18n="priv.eyebrow">Privacy</p>
+    <h2 data-i18n="priv.h2">Nothing leaves your Mac.</h2>
+    <p class="muted" data-i18n="priv.b">Your PDFs, the prepared text and the generated audio stay on your own hardware. The app talks to exactly one host: the server address you type in. There is no analytics, no telemetry and no third-party network call — this page itself loads nothing from anywhere else. The API is protected by a bearer token and is meant for your home network or your Tailscale tailnet.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap" style="max-width:820px; margin:0 auto">
+    <p class="eyebrow" data-i18n="faq.eyebrow">Questions</p>
+    <h2 data-i18n="faq.h2">The honest answers.</h2>
+    <div style="margin-top:28px">
+      <details><summary data-i18n="faq.1q">Do I need a Mac?</summary>
+        <p data-i18n="faq.1a">Yes. Generation runs on your Mac's CPU, no GPU needed. The iPhone app is only the player.</p></details>
+      <details><summary data-i18n="faq.2q">Is it in the App Store?</summary>
+        <p data-i18n="faq.2a">Not yet. The server is on GitHub today and the app is heading for TestFlight first.</p></details>
+      <details><summary data-i18n="faq.7q">Can I publish the app myself?</summary>
+        <p data-i18n="faq.7a">Yes. Everything is open and free under AGPL-3.0 — build it, change it, ship it under your own name. You need your own Apple Developer account and your own bundle identifier, and the licence asks you to publish your changes in return. The whole path is written up in the repository.</p></details>
+      <details><summary data-i18n="faq.3q">Does it work with my own books?</summary>
+        <p data-i18n="faq.3a">Any PDF with a real text layer. Scanned, image-only PDFs are rejected rather than guessed at. Only process books you are allowed to process.</p></details>
+      <details><summary data-i18n="faq.4q">Does it clone voices?</summary>
+        <p data-i18n="faq.4a">No. It uses six built-in, openly licensed voices and has no cloning feature.</p></details>
+      <details><summary data-i18n="faq.5q">How long does a book take?</summary>
+        <p data-i18n="faq.5a">On an M2 Pro, roughly 3 to 5 times faster than listening: a four-hour book is finished in about one to one and a half hours. You start listening in under a minute either way.</p></details>
+      <details><summary data-i18n="faq.6q">What does it cost?</summary>
+        <p data-i18n="faq.6a">Nothing. It is open source under AGPL-3.0.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav>
+      <a href="https://github.com/outspokenhardcore/pocketbooks">GitHub</a>
+      <a href="support.html">Support</a>
+      <a href="privacy.html">Privacy / Datenschutz</a>
+      <a href="https://www.mauli.app/">Mauli App</a>
+    </nav>
+    <p style="margin:0" data-i18n="foot.b">PocketBooks is an open-source project, licensed under AGPL-3.0. Pocket TTS, its voices and the other dependencies keep their own terms.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var DE = {
+    "hero.h1": "Dein Hörbuch spielt schon, während dein Mac es noch erzeugt.",
+    "hero.lead": "PocketBooks macht aus den PDFs auf deinem eigenen Mac gesprochene Hörbücher und streamt sie auf dein iPhone, während sie entstehen. Keine Cloud. Kein Konto. Kein Upload.",
+    "hero.cta1": "Auf GitHub ansehen",
+    "hero.cta2": "So funktioniert es",
+    "hero.fine": "Benötigt einen Mac. Kostenlos und quelloffen, AGPL-3.0.",
+    "hero.shotAlt": "Der PocketBooks-Player: Kapitel 2 läuft, während der Server noch Abschnitt 94 von 627 erzeugt.",
+    "wait.eyebrow": "Der Unterschied",
+    "wait.h2": "Sechs Stunden Arbeit. Unter einer Minute warten.",
+    "wait.barAlt": "Fortschrittsbalken: Das Hören beginnt in unter einer Minute, die Erzeugung läuft noch etwa sechs Stunden und vierzig Minuten weiter.",
+    "wait.leftB": "Du beginnst zu hören",
+    "wait.leftS": "in unter einer Minute",
+    "wait.rightB": "Erzeugung läuft weiter",
+    "wait.rightS": "noch ~6 Std. 41 Min.",
+    "wait.note": "Die Synthese läuft in Stücken und füllt einen wachsenden HLS-Stream — abgespielt wird, sobald die ersten Segmente da sind. Auf einem M2 Pro gemessen: Pocket TTS erzeugt etwa 3- bis 5-mal schneller, als du zuhören kannst, allein auf der CPU.",
+    "feat.eyebrow": "Was du bekommst",
+    "feat.h2": "Ein Hörbuch-Player für deine digitalen Bücher",
+    "feat.1t": "Deine Bibliothek, kein Katalog",
+    "feat.1b": "PDFs in einen Ordner auf deinem Mac legen. Jedes Buch wird über seine Prüfsumme erkannt — Umbenennen oder Verschieben kostet dich nie deine Hörposition.",
+    "feat.2t": "Mitlesen beim Hören",
+    "feat.2b": "Ein synchrones Transkript hebt den gerade gesprochenen Satz hervor. Tippe eine Zeile an, um direkt dorthin zu springen.",
+    "feat.3t": "Echte Kapitel",
+    "feat.3b": "Die Kapitelmarken stammen aus dem PDF-Inhaltsverzeichnis. Titelei, Widmungen und Impressumsseiten werden übersprungen.",
+    "feat.4t": "Sechs eingebaute Stimmen",
+    "feat.4b": "Kein Stimmen-Klonen nötig",
+    "feat.5t": "Überall weiterhören",
+    "feat.5b": "Deine Position liegt pro Buch auf deinem eigenen Server und gleicht sich zwischen deinen Geräten ab.",
+    "feat.6t": "Offline, sobald es fertig ist",
+    "feat.6b": "Das fertige Buch wird zu einer getaggten M4B mit Cover und Kapitelmarken zusammengesetzt.",
+    "shots.eyebrow": "Die App",
+    "shots.h2": "Fünf Ansichten, keine Menüs zum Lernen.",
+    "shots.1a": "Bibliotheksansicht mit fünf gemeinfreien Büchern samt Cover, Autor und Spieldauer.",
+    "shots.1c": "Deine eigenen Bücher, mit Cover und Spieldauer.",
+    "shots.2a": "Player-Ansicht: Kapitel 2 läuft, spätere Kapitel zeigen eine Sanduhr, weil sie noch nicht erzeugt sind.",
+    "shots.2c": "Kapitel 2 läuft. Kapitel 6 gibt es noch gar nicht.",
+    "shots.3a": "Transkript-Ansicht mit dem gerade gesprochenen Satz in Fettschrift.",
+    "shots.3c": "Der gesprochene Satz, hervorgehoben beim Hören.",
+    "shots.4a": "Stimmenmenü mit den sechs eingebauten Stimmen.",
+    "shots.4c": "Sechs eingebaute Stimmen.",
+    "shots.5a": "Die Bibliothek im hellen Design mit einer Weiterhören-Zeile oben.",
+    "shots.5c": "Hell und dunkel, systemweit.",
+    "how.eyebrow": "Einrichtung",
+    "how.h2": "Drei Schritte, ein Abend.",
+    "how.1t": "Server installieren",
+    "how.1b": "Ein Clone, ein Virtualenv, ein Befehl auf deinem Mac.",
+    "how.2t": "Bücher hinzufügen",
+    "how.2b": "Eigene PDFs nach ~/Audiobooks/PDFs legen — oder mit einem Befehl fünf gemeinfreie Klassiker zum Start holen.",
+    "how.3t": "Hören",
+    "how.3b": "Die iPhone-App einmal bauen, Serveradresse und Token eintragen, Buch wählen. Die Wiedergabe startet lange bevor die Erzeugung fertig ist.",
+    "lib.eyebrow": "Mitgeliefert",
+    "lib.h2": "PocketBooks liefert keine Bücher mit. Es liefert fünf, die niemandem gehören.",
+    "lib.note": "Gemeinfrei in den USA und in der EU. Die Herkunft jedes Titels ist <a href=\"https://github.com/outspokenhardcore/pocketbooks/blob/main/samples/README.md\">im Repository dokumentiert</a>.",
+    "priv.eyebrow": "Datenschutz",
+    "priv.h2": "Nichts verlässt deinen Mac.",
+    "priv.b": "Deine PDFs, der aufbereitete Text und das erzeugte Audio bleiben auf deiner eigenen Hardware. Die App spricht mit genau einem Host: der Serveradresse, die du einträgst. Kein Tracking, keine Telemetrie, kein Aufruf an Dritte — auch diese Seite lädt nichts von anderswo. Die API ist über einen Bearer-Token geschützt und für dein Heimnetz oder dein Tailscale-Netz gedacht.",
+    "faq.eyebrow": "Fragen",
+    "faq.h2": "Die ehrlichen Antworten.",
+    "faq.1q": "Brauche ich einen Mac?",
+    "faq.1a": "Ja. Die Erzeugung läuft auf der CPU deines Macs, eine GPU brauchst du nicht. Die iPhone-App ist nur der Player.",
+    "faq.2q": "Gibt es die App im App Store?",
+    "faq.2a": "Noch nicht. Der Server liegt heute auf GitHub, die App geht zuerst in TestFlight.",
+    "faq.7q": "Kann ich die App selbst in die Stores bringen?",
+    "faq.7a": "Ja. Alles ist offen und frei unter AGPL-3.0 — bauen, ändern, unter eigenem Namen veröffentlichen. Du brauchst einen eigenen Apple-Developer-Account und eine eigene Bundle-ID, und die Lizenz verlangt im Gegenzug, dass du deine Änderungen offenlegst. Der komplette Weg ist im Repository beschrieben.",
+    "faq.3q": "Funktioniert das mit meinen eigenen Büchern?",
+    "faq.3a": "Mit jedem PDF, das eine echte Textebene hat. Reine Bild-Scans werden abgelehnt statt geraten. Verarbeite nur Bücher, die du verarbeiten darfst.",
+    "faq.4q": "Klont es Stimmen?",
+    "faq.4a": "Nein. Es nutzt sechs eingebaute, offen lizenzierte Stimmen und hat keine Klon-Funktion.",
+    "faq.5q": "Wie lange dauert ein Buch?",
+    "faq.5a": "Auf einem M2 Pro etwa 3- bis 5-mal schneller als das Hören: Ein Vier-Stunden-Buch ist nach ein bis anderthalb Stunden fertig. Zu hören beginnst du ohnehin in unter einer Minute.",
+    "faq.6q": "Was kostet das?",
+    "faq.6a": "Nichts. Es ist quelloffen unter AGPL-3.0.",
+    "foot.b": "PocketBooks ist ein quelloffenes Projekt unter AGPL-3.0. Pocket TTS, seine Stimmen und die übrigen Abhängigkeiten behalten ihre eigenen Lizenzbedingungen."
+  };
+
+  var EN = {};
+  function collect() {
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      EN[el.getAttribute("data-i18n")] = el.innerHTML;
+    });
+    document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
+      EN[el.getAttribute("data-i18n-alt")] = el.getAttribute("alt");
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      EN[el.getAttribute("data-i18n-aria")] = el.getAttribute("aria-label");
+    });
+  }
+
+  function apply(lang) {
+    var dict = lang === "de" ? DE : EN;
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var v = dict[el.getAttribute("data-i18n")];
+      if (v !== undefined) el.innerHTML = v;
+    });
+    document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
+      var v = dict[el.getAttribute("data-i18n-alt")];
+      if (v !== undefined) el.setAttribute("alt", v);
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      var v = dict[el.getAttribute("data-i18n-aria")];
+      if (v !== undefined) el.setAttribute("aria-label", v);
+    });
+    document.documentElement.lang = lang;
+    document.querySelectorAll(".lang button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+    });
+    try { localStorage.setItem("kb-lang", lang); } catch (e) {}
+  }
+
+  collect();
+  var saved = null;
+  try { saved = localStorage.getItem("kb-lang"); } catch (e) {}
+  if (!saved) saved = (navigator.language || "en").slice(0, 2) === "de" ? "de" : "en";
+  if (saved === "de") apply("de");
+
+  document.querySelectorAll(".lang button").forEach(function (b) {
+    b.addEventListener("click", function () { apply(b.dataset.lang); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.pocketbooks</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/REPLACE_WITH_YOUR_USERNAME/pocketbooks/backend/.venv/bin/python</string>
+    <string>-m</string>
+    <string>app.serve</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/REPLACE_WITH_YOUR_USERNAME/pocketbooks/backend</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PBS_HOST</key>            <string>0.0.0.0</string>
+    <key>PBS_PORT</key>            <string>8725</string>
+    <key>PBS_LIBRARY_DIR</key>     <string>/Users/REPLACE_WITH_YOUR_USERNAME/Audiobooks/PDFs</string>
+    <key>PBS_AUDIO_CACHE_GB</key>  <string>20</string>
+    <key>PBS_SLEEP_START</key>     <string>23:55</string>
+    <key>PBS_SLEEP_END</key>       <string>04:00</string>
+    <key>PBS_ENGINE</key>          <string>pocket</string>
+    <key>PBS_FFMPEG</key>          <string>/opt/homebrew/bin/ffmpeg</string>
+    <key>PATH</key>                <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/REPLACE_WITH_YOUR_USERNAME/Library/Logs/pocketbooks.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/REPLACE_WITH_YOUR_USERNAME/Library/Logs/pocketbooks.err.log</string>
+</dict>
+</plist>

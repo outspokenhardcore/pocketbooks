@@ -1,0 +1,94 @@
+name: App Store listing
+
+# Manual only. Reads the App Store Connect key from Infisical over Tailscale and
+# runs the same fastlane lanes you can run on your Mac.
+#
+#   check     read-only: is the key valid, does the app exist, what builds are there?
+#   metadata  upload listing text, review notes and screenshots (reversible)
+#   submit    send the latest processed build to App Review (this is the real one)
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to run"
+        type: choice
+        options: [check, metadata, submit]
+        default: check
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocketbooks-store
+  cancel-in-progress: false
+
+jobs:
+  store:
+    # Submitting to App Review is the one step that cannot be undone quietly, so
+    # it is only allowed from main.
+    if: inputs.action != 'submit' || github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    # The Infisical identity only trusts this environment.
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      KB_IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+      KB_IOS_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+      KB_REVIEW_FIRST_NAME: ${{ vars.KB_REVIEW_FIRST_NAME }}
+      KB_REVIEW_LAST_NAME: ${{ vars.KB_REVIEW_LAST_NAME }}
+      KB_REVIEW_EMAIL: ${{ vars.KB_REVIEW_EMAIL }}
+      KB_COPYRIGHT: ${{ vars.KB_COPYRIGHT }}
+      KB_REVIEW_PHONE: ${{ secrets.KB_REVIEW_PHONE }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Join private Tailscale network
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ vars.TS_OIDC_CLIENT_ID }}
+          audience: ${{ vars.TS_OIDC_AUDIENCE }}
+          tags: tag:ci
+
+      - name: Fetch the shared store secrets
+        uses: Infisical/secrets-action@v1.0.18
+        with:
+          method: oidc
+          domain: ${{ vars.INFISICAL_URL }}
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_SHARED_PROJECT_SLUG }}
+          env-slug: prod
+
+      - name: Require the App Store Connect key
+        run: |
+          [ -n "$APP_STORE_CONNECT_KEY_P8" ] || {
+            echo "::error::APP_STORE_CONNECT_KEY_P8 is not in the Infisical shared-store project (env prod)."
+            exit 1
+          }
+
+      - name: Check the repository settings
+        run: |
+          missing=""
+          for name in KB_IOS_BUNDLE_ID KB_IOS_TEAM_ID APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ "${{ inputs.action }}" != "check" ]; then
+            for name in KB_REVIEW_FIRST_NAME KB_REVIEW_LAST_NAME KB_REVIEW_EMAIL KB_COPYRIGHT KB_REVIEW_PHONE; do
+              [ -n "${!name}" ] || missing="$missing $name"
+            done
+          fi
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository variables or secrets:$missing"
+            echo "See docs/LAUNCH.md, section 'Listing and submission from CI'."
+            exit 1
+          fi
+
+      - name: Install fastlane
+        run: brew install fastlane
+
+      - name: Run the lane
+        working-directory: ios
+        run: fastlane ios ${{ inputs.action }}

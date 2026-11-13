@@ -1,0 +1,31 @@
+PocketBooks is an audiobook player for books you generate yourself. Turn the PDFs on your own Mac into spoken audiobooks with the free, open-source PocketBooks server, and start listening on your iPhone or iPad while the rest of the book is still being made.
+
+No account. No cloud. No upload. Your books never leave your own hardware.
+
+TRY IT FIRST
+Open Settings and tap "Try the demo library". Five public-domain classics are already generated and play instantly, with no server and no setup: The War of the Worlds, The Time Machine, A Princess of Mars, The Thirty-Nine Steps and The Riddle of the Sands.
+
+LISTEN BEFORE IT IS FINISHED
+The server turns a book into speech in chunks and streams it as it goes. Playback begins within a minute, even for a 400-page novel.
+
+READ ALONG
+A synchronised transcript highlights the sentence being spoken. Tap any line to jump to it.
+
+REAL CHAPTERS
+Chapter marks come from the book's own outline. Jump between chapters, or skip back 15 and forward 30 seconds.
+
+BUILT FOR LISTENING
+- Background playback with the screen locked
+- Sleep timer
+- Your position is remembered for every book
+- Six built-in voices
+- Download finished books for offline listening
+- Light and dark appearance
+
+YOUR LIBRARY, YOUR SERVER
+Point the app at the Mac running the PocketBooks server on your home network or your Tailscale network, enter the token it prints, and browse your own PDFs. Setup takes a few minutes and is described step by step, including prompts for AI coding assistants, in the open-source project.
+
+PRIVATE BY DESIGN
+No analytics, no tracking, no advertising and no third-party code. The app only talks to the server address you enter, or to the demo library.
+
+PocketBooks is free and open source under the AGPL-3.0. Only use books you are allowed to process.

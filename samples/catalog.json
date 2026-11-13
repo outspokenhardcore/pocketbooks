@@ -1,0 +1,112 @@
+{
+  "$comment": "Public-domain starter library for PocketBooks. Build the PDFs with: python -m app.samples",
+  "version": 1,
+  "collection": "Public Domain Samples",
+  "books": [
+    {
+      "slug": "the-war-of-the-worlds",
+      "filename": "The War of the Worlds.pdf",
+      "title": "The War of the Worlds",
+      "author": "H. G. Wells",
+      "first_published": 1898,
+      "genre": "Science fiction",
+      "blurb": "A Martian invasion seen through the eyes of an unnamed narrator fleeing across southern England. The founding text of alien-invasion science fiction.",
+      "source": {
+        "name": "Project Gutenberg",
+        "ebook_id": 36,
+        "page_url": "https://www.gutenberg.org/ebooks/36",
+        "text_url": "https://www.gutenberg.org/ebooks/36.txt.utf-8"
+      },
+      "rights": {
+        "status": "Public domain",
+        "author_died": 1946,
+        "united_states": "Published in 1898, long before the 1930 cut-off, so the work is in the public domain in the United States.",
+        "european_union": "H. G. Wells died in 1946; the 70-years-after-death term (for example German UrhG \u00a7 64) expired at the end of 2016."
+      }
+    },
+    {
+      "slug": "the-time-machine",
+      "filename": "The Time Machine.pdf",
+      "title": "The Time Machine",
+      "author": "H. G. Wells",
+      "first_published": 1895,
+      "genre": "Science fiction",
+      "blurb": "An inventor travels to the year 802,701 and finds humanity split into the gentle Eloi and the subterranean Morlocks. The book that fixed time travel as a science-fiction idea.",
+      "source": {
+        "name": "Project Gutenberg",
+        "ebook_id": 35,
+        "page_url": "https://www.gutenberg.org/ebooks/35",
+        "text_url": "https://www.gutenberg.org/ebooks/35.txt.utf-8"
+      },
+      "rights": {
+        "status": "Public domain",
+        "author_died": 1946,
+        "united_states": "Published in 1895, long before the 1930 cut-off, so the work is in the public domain in the United States.",
+        "european_union": "H. G. Wells died in 1946; the 70-years-after-death term expired at the end of 2016."
+      }
+    },
+    {
+      "slug": "a-princess-of-mars",
+      "filename": "A Princess of Mars.pdf",
+      "title": "A Princess of Mars",
+      "author": "Edgar Rice Burroughs",
+      "first_published": 1912,
+      "genre": "Science fiction",
+      "blurb": "Civil War veteran John Carter wakes on Barsoom with the strength of a giant and is pulled into the wars of a dying planet. The blueprint for planetary-romance science fiction.",
+      "source": {
+        "name": "Project Gutenberg",
+        "ebook_id": 62,
+        "page_url": "https://www.gutenberg.org/ebooks/62",
+        "text_url": "https://www.gutenberg.org/ebooks/62.txt.utf-8"
+      },
+      "rights": {
+        "status": "Public domain",
+        "author_died": 1950,
+        "united_states": "First published in 1912, long before the 1930 cut-off, so the work is in the public domain in the United States.",
+        "european_union": "Edgar Rice Burroughs died in 1950; the 70-years-after-death term expired at the end of 2020."
+      }
+    },
+    {
+      "slug": "the-thirty-nine-steps",
+      "filename": "The Thirty-Nine Steps.pdf",
+      "title": "The Thirty-Nine Steps",
+      "author": "John Buchan",
+      "first_published": 1915,
+      "genre": "Spy thriller",
+      "blurb": "Richard Hannay is framed for murder and runs from both the police and a German spy ring across the Scottish moors. The original man-on-the-run secret-agent thriller.",
+      "source": {
+        "name": "Project Gutenberg",
+        "ebook_id": 558,
+        "page_url": "https://www.gutenberg.org/ebooks/558",
+        "text_url": "https://www.gutenberg.org/ebooks/558.txt.utf-8"
+      },
+      "rights": {
+        "status": "Public domain",
+        "author_died": 1940,
+        "united_states": "Published in 1915, long before the 1930 cut-off, so the work is in the public domain in the United States.",
+        "european_union": "John Buchan died in 1940; the 70-years-after-death term expired at the end of 2010."
+      }
+    },
+    {
+      "slug": "the-riddle-of-the-sands",
+      "filename": "The Riddle of the Sands.pdf",
+      "title": "The Riddle of the Sands",
+      "author": "Erskine Childers",
+      "first_published": 1903,
+      "genre": "Spy thriller",
+      "blurb": "Two friends sailing a small yacht through the Frisian Islands stumble onto a German invasion plan. Widely regarded as the first modern espionage novel.",
+      "source": {
+        "name": "Project Gutenberg",
+        "ebook_id": 2360,
+        "page_url": "https://www.gutenberg.org/ebooks/2360",
+        "text_url": "https://www.gutenberg.org/ebooks/2360.txt.utf-8"
+      },
+      "rights": {
+        "status": "Public domain",
+        "author_died": 1922,
+        "united_states": "Published in 1903, long before the 1930 cut-off, so the work is in the public domain in the United States.",
+        "european_union": "Erskine Childers died in 1922; the 70-years-after-death term expired at the end of 1992."
+      }
+    }
+  ]
+}

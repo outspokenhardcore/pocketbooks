@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PocketBooks — Support</title>
+<meta name="description" content="Help with PocketBooks: connecting to your server, the demo library, and how to report a problem.">
+<link rel="canonical" href="https://www.mauli.app/pocketbooks/support.html">
+<link rel="icon" href="assets/icon-180.png" type="image/png">
+<link rel="stylesheet" href="assets/legal.css">
+</head>
+<body>
+<header><div class="wrap bar">
+  <a class="brand" href="./"><img src="assets/icon-180.png" alt="">PocketBooks</a>
+  <nav><div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="de" aria-pressed="false">DE</button>
+  </div></nav>
+</div></header>
+
+<main><div class="wrap">
+
+<div data-l="en">
+  <h1>Support</h1>
+  <p class="muted">Help with the PocketBooks iPhone and iPad app.</p>
+
+  <div class="summary"><p><strong>Fastest way to get help:</strong> open an issue on <a href="https://github.com/outspokenhardcore/pocketbooks/issues">GitHub</a>, or write to <a href="mailto:henning@mauli.app">henning@mauli.app</a>.</p></div>
+
+  <h2>I just want to try it</h2>
+  <p>Open <em>Settings</em> in the app and tap <em>Try the demo library</em>. It plays five pre-generated public-domain books and needs no server and no token.</p>
+
+  <h2>The app cannot connect to my server</h2>
+  <ul>
+    <li>Check that the server is running: the Mac must be awake and <code>python -m app.serve</code> must be active.</li>
+    <li>Enter the address with the port, for example <code>http://192.168.1.10:8725</code>.</li>
+    <li>Use the API token the server printed when it started. It is not your Apple ID password.</li>
+    <li>iPhone and Mac must be on the same network, or both on your Tailscale network.</li>
+    <li>If iOS asks to allow access to the local network, choose <em>Allow</em>. You can change this later in the iOS Settings under PocketBooks.</li>
+  </ul>
+
+  <h2>Playback starts but stops or stutters</h2>
+  <p>While a book is still being generated you can only seek within the part that already exists. If the server is busy with another book, playback can pause until the next segments are ready. Generation is usually many times faster than listening.</p>
+
+  <h2>Which books can I use?</h2>
+  <p>Any PDF with a real text layer. Scanned, image-only PDFs are not supported. Only use books you are allowed to process.</p>
+
+  <h2>Setting up the server</h2>
+  <p>The full guide, including prompts for AI coding assistants, is in the <a href="https://github.com/outspokenhardcore/pocketbooks">repository</a>.</p>
+
+  <h2>Reporting a problem</h2>
+  <p>Please say which device and iOS version you use, what you did, and what you expected. Do not send private books, tokens or server addresses.</p>
+</div>
+
+<div data-l="de">
+  <h1>Support</h1>
+  <p class="muted">Hilfe zur PocketBooks-App für iPhone und iPad.</p>
+
+  <div class="summary"><p><strong>Am schnellsten:</strong> Eröffne ein Issue auf <a href="https://github.com/outspokenhardcore/pocketbooks/issues">GitHub</a> oder schreib an <a href="mailto:henning@mauli.app">henning@mauli.app</a>.</p></div>
+
+  <h2>Ich will es nur ausprobieren</h2>
+  <p>Öffne in der App die <em>Einstellungen</em> und tippe auf <em>Try the demo library</em>. Sie spielt fünf vorab erzeugte, gemeinfreie Bücher und braucht weder Server noch Token.</p>
+
+  <h2>Die App erreicht meinen Server nicht</h2>
+  <ul>
+    <li>Prüfe, ob der Server läuft: Der Mac muss wach sein und <code>python -m app.serve</code> aktiv.</li>
+    <li>Gib die Adresse mit Port ein, zum Beispiel <code>http://192.168.1.10:8725</code>.</li>
+    <li>Nimm das API-Token, das der Server beim Start ausgegeben hat. Es ist nicht dein Apple-ID-Passwort.</li>
+    <li>iPhone und Mac müssen im selben Netz sein oder beide in deinem Tailscale-Netz.</li>
+    <li>Fragt iOS nach dem Zugriff auf das lokale Netzwerk, wähle <em>Erlauben</em>. Du kannst das später in den iOS-Einstellungen unter PocketBooks ändern.</li>
+  </ul>
+
+  <h2>Die Wiedergabe stockt oder bricht ab</h2>
+  <p>Solange ein Buch noch erzeugt wird, kannst du nur in dem Teil spulen, der schon existiert. Ist der Server mit einem anderen Buch beschäftigt, kann die Wiedergabe pausieren, bis die nächsten Segmente fertig sind. Die Erzeugung ist meist um ein Vielfaches schneller als das Hören.</p>
+
+  <h2>Welche Bücher kann ich nutzen?</h2>
+  <p>Jedes PDF mit echter Textebene. Eingescannte PDFs nur mit Bildern werden nicht unterstützt. Nutze nur Bücher, die du verarbeiten darfst.</p>
+
+  <h2>Den Server einrichten</h2>
+  <p>Die vollständige Anleitung, inklusive Prompts für KI-Assistenten, steht im <a href="https://github.com/outspokenhardcore/pocketbooks">Repository</a>.</p>
+
+  <h2>Ein Problem melden</h2>
+  <p>Bitte nenne Gerät und iOS-Version, was du getan hast und was du erwartet hast. Sende keine privaten Bücher, Tokens oder Serveradressen.</p>
+</div>
+
+</div></main>
+
+<footer><div class="wrap"><nav>
+  <a href="./">PocketBooks</a>
+  <a href="privacy.html">Privacy / Datenschutz</a>
+  <a href="https://github.com/outspokenhardcore/pocketbooks">GitHub</a>
+</nav></div></footer>
+
+<script>
+(function () {
+  "use strict";
+  function apply(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll(".lang button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+    });
+    try { localStorage.setItem("kb-lang", lang); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem("kb-lang"); } catch (e) {}
+  if (!saved) saved = (navigator.language || "en").slice(0, 2) === "de" ? "de" : "en";
+  apply(saved);
+  document.querySelectorAll(".lang button").forEach(function (b) {
+    b.addEventListener("click", function () { apply(b.dataset.lang); });
+  });
+})();
+</script>
+</body>
+</html>
